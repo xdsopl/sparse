@@ -1,0 +1,49 @@
+sparse - sparse file encoding, decoding and patching
+
+Creating a sparse file:
+
+# truncate -s 1M sparse.img
+
+Looking at its disk usage:
+
+# du -h sparse.img
+0       sparse.img
+
+Looking at its apparent size:
+
+# du -h --apparent-size sparse.img
+1.0M    sparse.img
+
+Encoding a sparse file:
+
+# sparse e sparse.img > encoded.dat
+
+Looking at its disk usage:
+
+# du -h encoded.dat
+8       encoded.dat
+
+Decoding a sparse file:
+
+# sparse d decoded.img < encoded.dat
+
+Looking at its disk usage:
+
+# du -h decoded.img
+0       decoded.img
+
+Patching a block device using an encoded sparse file:
+
+# sparse p /dev/mmcblk0p4 < encoded.dat
+
+Data layout of encoded sparse file:
+big endian uint64_t: total byte count
+big endian uint64_t: data start offset
+big endian uint64_t: hole start offset
+.. (hole start offset) - (data start offset) bytes ..
+big endian uint64_t: data start offset
+big endian uint64_t: hole start offset
+.. (hole start offset) - (data start offset) bytes ..
+
+and so on
+
