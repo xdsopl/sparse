@@ -1,4 +1,5 @@
 
+#include <inttypes.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -106,7 +107,7 @@ int decode(char *name, int patch)
 		return 1;
 	}
 	if (!patch) {
-		fprintf(stderr, "truncating %s to size %ld\n", name, total);
+		fprintf(stderr, "truncating %s to size %" PRIu64 "\n", name, total);
 		if (ftruncate(fd, total)) {
 			perror(name);
 			return 1;
