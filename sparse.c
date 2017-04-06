@@ -153,12 +153,16 @@ int decode(char *name, int patch)
 	return 0;
 }
 
+int usage(char *name)
+{
+	fprintf(stderr, "usage: %s {e|d|p} file\n", name);
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
-	if (argc != 3 || (strcmp(argv[1], "e") && strcmp(argv[1], "d") && strcmp(argv[1], "p")) || !strlen(argv[2])) {
-		fprintf(stderr, "usage: %s {e|d|p} file\n", argv[0]);
-		return 1;
-	}
+	if (argc != 3 || strlen(argv[1]) != 1 || !strlen(argv[2]))
+		return usage(argv[0]);
 	switch (argv[1][0]) {
 		case 'e':
 			return encode(argv[2]);
@@ -167,6 +171,6 @@ int main(int argc, char **argv)
 		case 'p':
 			return decode(argv[2], 1);
 	}
-	return 0;
+	return usage(argv[0]);
 }
 
