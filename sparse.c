@@ -33,7 +33,7 @@ int encode(char *name)
 		perror(name);
 		return 1;
 	}
-	off_t end = lseek(fd, 0, SEEK_END);
+	off64_t end = lseek64(fd, 0, SEEK_END);
 	if (end < 0) {
 		perror(name);
 		return 1;
@@ -41,12 +41,12 @@ int encode(char *name)
 	// total size
 	if (put_word_be(end))
 		return 1;
-	off_t data = lseek(fd, 0, SEEK_DATA);
+	off64_t data = lseek64(fd, 0, SEEK_DATA);
 	while (data >= 0) {
 		// data begins at this offset
 		if (put_word_be(data))
 			return 1;
-		off_t hole = lseek(fd, data, SEEK_HOLE);
+		off64_t hole = lseek64(fd, data, SEEK_HOLE);
 		if (hole < 0) {
 			perror(name);
 			return 1;
@@ -54,7 +54,7 @@ int encode(char *name)
 		// hole begins at this offset
 		if (put_word_be(hole))
 			return 1;
-		if (data != lseek(fd, data, SEEK_SET)) {
+		if (data != lseek64(fd, data, SEEK_SET)) {
 			perror(name);
 			return 1;
 		}
@@ -76,7 +76,7 @@ int encode(char *name)
 				}
 			}
 		}
-		data = lseek(fd, hole, SEEK_DATA);
+		data = lseek64(fd, hole, SEEK_DATA);
 	}
 	return 0;
 }
@@ -129,7 +129,7 @@ int decode(char *name, int patch)
 			fprintf(stderr, "failed reading hole offset word from stdin\n");
 			return 1;
 		}
-		if ((off_t)data != lseek(fd, data, SEEK_SET)) {
+		if ((off64_t)data != lseek64(fd, data, SEEK_SET)) {
 			perror(name);
 			return 1;
 		}
