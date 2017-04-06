@@ -4,6 +4,7 @@ Creating a sparse file:
 
 # truncate -s 1M sparse.img
 # echo "Hello World!" | dd of=sparse.img bs=1 seek=12345 conv=notrunc
+# echo "Hallo Welt!" | dd of=sparse.img bs=1 seek=54321 conv=notrunc
 
 Looking at its disk usage:
 
@@ -15,6 +16,20 @@ Looking at its apparent size:
 # du -h --apparent-size sparse.img
 1.0M    sparse.img
 
+Looking at its hexdump:
+
+# hexdump -C sparse.img
+00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00003030  00 00 00 00 00 00 00 00  00 48 65 6c 6c 6f 20 57  |.........Hello W|
+00003040  6f 72 6c 64 21 0a 00 00  00 00 00 00 00 00 00 00  |orld!...........|
+00003050  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+0000d430  00 48 61 6c 6c 6f 20 57  65 6c 74 21 0a 00 00 00  |.Hallo Welt!....|
+0000d440  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00100000
+
 Encoding a sparse file:
 
 # sparse e sparse.img > encoded.dat
@@ -24,6 +39,27 @@ Looking at its disk usage:
 
 # du -h encoded.dat
 8.0K    encoded.dat
+
+Looking at its hexdump:
+
+# hexdump -C encoded.dat
+00000000  00 00 00 00 00 10 00 00  00 00 00 00 00 00 30 00  |..............0.|
+00000010  00 00 00 00 00 00 40 00  00 00 00 00 00 00 00 00  |......@.........|
+00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000050  00 48 65 6c 6c 6f 20 57  6f 72 6c 64 21 0a 00 00  |.Hello World!...|
+00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00001010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 d0 00  |................|
+00001020  00 00 00 00 00 00 e0 00  00 00 00 00 00 00 00 00  |................|
+00001030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00001450  00 00 00 00 00 00 00 00  00 48 61 6c 6c 6f 20 57  |.........Hallo W|
+00001460  65 6c 74 21 0a 00 00 00  00 00 00 00 00 00 00 00  |elt!............|
+00001470  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00002020  00 00 00 00 00 00 00 00                           |........|
+00002028
 
 Decoding a sparse file:
 
@@ -35,6 +71,22 @@ Looking at its disk usage:
 
 # du -h decoded.img
 4.0K    decoded.img
+
+Start encoding a sparse file from offset:
+
+# sparse e sparse.img 54321 > encoded.dat
+encoding sparse.img to stdout
+
+Looking at its hexdump:
+
+# hexdump -C encoded.dat
+00000000  00 00 00 00 00 10 00 00  00 00 00 00 00 00 d4 31  |...............1|
+00000010  00 00 00 00 00 00 e0 00  48 61 6c 6c 6f 20 57 65  |........Hallo We|
+00000020  6c 74 21 0a 00 00 00 00  00 00 00 00 00 00 00 00  |lt!.............|
+00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000be0  00 00 00 00 00 00 00                              |.......|
+00000be7
 
 Patching a block device using an encoded sparse file:
 

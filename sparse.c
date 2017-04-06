@@ -10,9 +10,11 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 int put_word_be(uint64_t word)
 {
@@ -25,7 +27,7 @@ int put_word_be(uint64_t word)
 	return 0;
 }
 
-int encode(char *name)
+int encode(char *name, uint64_t offset)
 {
 	fprintf(stderr, "encoding %s to stdout\n", name);
 	int fd = open(name, O_RDONLY);
@@ -41,7 +43,7 @@ int encode(char *name)
 	// total size
 	if (put_word_be(end))
 		return 1;
-	off64_t data = lseek64(fd, 0, SEEK_DATA);
+	off64_t data = lseek64(fd, offset, SEEK_DATA);
 	while (data >= 0) {
 		// data begins at this offset
 		if (put_word_be(data))
@@ -163,21 +165,34 @@ int decode(char *name, int patch)
 
 int usage(char *name)
 {
-	fprintf(stderr, "usage: %s {e|d|p} file\n", name);
+	fprintf(stderr, "usage: %s {e|d|p} file [offset]\n", name);
 	return 1;
 }
 
 int main(int argc, char **argv)
 {
-	if (argc != 3 || strlen(argv[1]) != 1 || !strlen(argv[2]))
+	if (argc < 3 || 4 < argc || strlen(argv[1]) != 1 || !strlen(argv[2]))
 		return usage(argv[0]);
 	switch (argv[1][0]) {
-		case 'e':
-			return encode(argv[2]);
-		case 'd':
+		case 'e': {
+			uint64_t offset = 0;
+			if (argc == 4) {
+				char *endptr;
+				errno = 0;
+				offset = strtoll(argv[3], &endptr, 10);
+				if (errno || endptr == argv[3])
+					return usage(argv[0]);
+			}
+			return encode(argv[2], offset);
+		} case 'd': {
+			if (argc != 3)
+				return usage(argv[0]);
 			return decode(argv[2], 0);
-		case 'p':
+		} case 'p': {
+			if (argc != 3)
+				return usage(argv[0]);
 			return decode(argv[2], 1);
+		}
 	}
 	return usage(argv[0]);
 }
